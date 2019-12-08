@@ -36,7 +36,7 @@ namespace BpArcadeRobot.Infrastructure
             return Task.CompletedTask;
         }
 
-        private bool ClickOnWindowCenter(Process process)
+        private static bool ClickOnWindowCenter(Process process)
         {
             if (!User32.GetWindowRect(process.MainWindowHandle, out var winRect))
                 return false;
@@ -44,8 +44,11 @@ namespace BpArcadeRobot.Infrastructure
             var x = (int)((winRect.right - winRect.left) / 2.0 + winRect.left);
             var y = (int)((winRect.bottom - winRect.top) / 2.0 + winRect.top);
 
-            this.inputSimulator.Mouse.MoveMouseTo(ushort.MaxValue / 2, ushort.MaxValue / 2);
-            this.inputSimulator.Mouse.RightButtonClick();
+            if (!User32.SetCursorPos(x, y))
+                return false;
+
+            User32.mouse_event(User32.mouse_eventFlags.MOUSEEVENTF_LEFTDOWN, x, y, 0, IntPtr.Zero);
+            User32.mouse_event(User32.mouse_eventFlags.MOUSEEVENTF_LEFTUP, x, y, 0, IntPtr.Zero);
 
             return true;
         }
