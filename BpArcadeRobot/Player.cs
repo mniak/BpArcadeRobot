@@ -28,7 +28,7 @@ namespace BpArcadeRobot
             await this.eyes.DetectMainRegion();
             while (Playing)
             {
-                await WaitALittle();
+                await this.brain.WaitSomeTime();
 
                 using (var frame = await this.eyes.SeeFrame())
                 {
@@ -39,11 +39,10 @@ namespace BpArcadeRobot
                     }
 
                     var movement = this.brain.CalculateMove(frame);
+                    await this.hands.StopMoving();
+
                     switch (movement)
                     {
-                        case Move.Stay:
-                            await this.hands.StopMoving();
-                            break;
                         case Move.Left:
                             await this.hands.StartMovingLeft();
                             break;
@@ -53,11 +52,6 @@ namespace BpArcadeRobot
                     }
                 }
             }
-        }
-
-        private Task WaitALittle()
-        {
-            return Task.Delay(100);
         }
     }
 }

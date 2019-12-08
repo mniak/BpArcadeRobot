@@ -44,9 +44,8 @@ namespace BpArcadeRobot.Infrastructure
             var x = (int)((winRect.right - winRect.left) / 2.0 + winRect.left);
             var y = (int)((winRect.bottom - winRect.top) / 2.0 + winRect.top);
 
-            this.inputSimulator.Mouse
-                .MoveMouseTo(x, y)
-                .RightButtonClick();
+            this.inputSimulator.Mouse.MoveMouseTo(ushort.MaxValue / 2, ushort.MaxValue / 2);
+            this.inputSimulator.Mouse.RightButtonClick();
 
             return true;
         }
