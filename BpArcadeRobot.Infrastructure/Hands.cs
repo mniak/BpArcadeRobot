@@ -17,7 +17,7 @@ namespace BpArcadeRobot.Infrastructure
 
         public Hands()
         {
-            inputSimulator = new InputSimulator();
+            this.inputSimulator = new InputSimulator();
         }
         public IntPtr Handle { get; private set; }
 
@@ -71,17 +71,17 @@ namespace BpArcadeRobot.Infrastructure
 
         public Task PressEnter()
         {
-            inputSimulator.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            this.inputSimulator.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             return Task.CompletedTask;
         }
 
         public Task StartMovingLeft()
         {
             Console.WriteLine("Press left");
-            if (!pressingLeft)
+            if (!this.pressingLeft)
             {
-                inputSimulator.Keyboard.KeyDown(VirtualKeyCode.LEFT);
-                pressingLeft = true;
+                this.inputSimulator.Keyboard.KeyDown(VirtualKeyCode.LEFT);
+                this.pressingLeft = true;
             }
             return Task.CompletedTask;
         }
@@ -89,10 +89,10 @@ namespace BpArcadeRobot.Infrastructure
         public Task StartMovingRight()
         {
             Console.WriteLine("Press right");
-            if (!pressingRight)
+            if (!this.pressingRight)
             {
-                inputSimulator.Keyboard.KeyDown(VirtualKeyCode.RIGHT);
-                pressingRight = true;
+                this.inputSimulator.Keyboard.KeyDown(VirtualKeyCode.RIGHT);
+                this.pressingRight = true;
             }
             return Task.CompletedTask;
         }
@@ -100,15 +100,15 @@ namespace BpArcadeRobot.Infrastructure
         public Task StopMoving()
         {
             Console.WriteLine("stop");
-            if (pressingLeft)
+            if (this.pressingLeft)
             {
-                inputSimulator.Keyboard.KeyUp(VirtualKeyCode.LEFT);
-                pressingLeft = false;
+                this.inputSimulator.Keyboard.KeyUp(VirtualKeyCode.LEFT);
+                this.pressingLeft = false;
             }
-            if (pressingRight)
+            if (this.pressingRight)
             {
-                inputSimulator.Keyboard.KeyUp(VirtualKeyCode.RIGHT);
-                pressingRight = false;
+                this.inputSimulator.Keyboard.KeyUp(VirtualKeyCode.RIGHT);
+                this.pressingRight = false;
             }
             return Task.CompletedTask;
         }

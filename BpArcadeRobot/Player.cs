@@ -24,30 +24,31 @@ namespace BpArcadeRobot
         public async Task StartPlaying()
         {
             Playing = true;
-            await hands.InitializeGame();
+            await this.hands.InitializeGame();
+            await this.eyes.DetectMainRegion();
             while (Playing)
             {
                 await WaitALittle();
 
-                using (var frame = await eyes.SeeFrame())
+                using (var frame = await this.eyes.SeeFrame())
                 {
-                    if (brain.DetectGameIsPaused(frame))
+                    if (this.brain.DetectGameIsPaused(frame))
                     {
-                        await hands.PressEnter();
+                        await this.hands.PressEnter();
                         continue;
                     }
 
-                    var movement = brain.CalculateMove(frame);
+                    var movement = this.brain.CalculateMove(frame);
                     switch (movement)
                     {
                         case Move.Stay:
-                            await hands.StopMoving();
+                            await this.hands.StopMoving();
                             break;
                         case Move.Left:
-                            await hands.StartMovingLeft();
+                            await this.hands.StartMovingLeft();
                             break;
                         case Move.Right:
-                            await hands.StartMovingRight();
+                            await this.hands.StartMovingRight();
                             break;
                     }
                 }

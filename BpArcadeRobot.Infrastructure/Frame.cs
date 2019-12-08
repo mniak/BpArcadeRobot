@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.IO;
 
 namespace BpArcadeRobot.Infrastructure
 {
@@ -10,21 +11,23 @@ namespace BpArcadeRobot.Infrastructure
         public Frame(Bitmap bitmap)
         {
             this.bitmap = bitmap ?? throw new ArgumentNullException(nameof(bitmap));
+
         }
 
-        public int Height => bitmap.Height;
+        public int Height => this.bitmap.Height;
 
-        public int Width => bitmap.Width;
+        public int Width => this.bitmap.Width;
 
         public (byte red, byte green, byte blue) GetPixelColor(int x, int y)
         {
-            var color = bitmap.GetPixel(x, y);
+            var color = this.bitmap.GetPixel(x, y);
             return (color.R, color.G, color.B);
         }
 
         public void Dispose()
         {
-            bitmap.Dispose();
+            this.bitmap.Save(Path.Combine(@"D:\UserProfile\Downloads\temp", $"{DateTime.Now.Ticks}.png"));
+            this.bitmap.Dispose();
         }
     }
 }
