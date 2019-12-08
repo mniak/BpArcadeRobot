@@ -75,7 +75,6 @@ namespace BpArcadeRobot.Infrastructure
 
         public Task StartMovingLeft()
         {
-            Console.WriteLine("Press left");
             if (!this.pressingLeft)
             {
                 this.inputSimulator.Keyboard.KeyDown(VirtualKeyCode.LEFT);
@@ -86,7 +85,6 @@ namespace BpArcadeRobot.Infrastructure
 
         public Task StartMovingRight()
         {
-            Console.WriteLine("Press right");
             if (!this.pressingRight)
             {
                 this.inputSimulator.Keyboard.KeyDown(VirtualKeyCode.RIGHT);
@@ -97,7 +95,6 @@ namespace BpArcadeRobot.Infrastructure
 
         public Task StopMoving()
         {
-            Console.WriteLine("stop");
             if (this.pressingLeft)
             {
                 this.inputSimulator.Keyboard.KeyUp(VirtualKeyCode.LEFT);
