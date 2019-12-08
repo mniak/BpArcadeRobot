@@ -4,12 +4,21 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Forms;
+using WindowsInput;
+using WindowsInput.Native;
 
 namespace BpArcadeRobot.Infrastructure
 {
     public class Hands : IHands
     {
+        private readonly InputSimulator inputSimulator;
+        private bool pressingRight;
+        private bool pressingLeft;
+
+        public Hands()
+        {
+            inputSimulator = new InputSimulator();
+        }
         public IntPtr Handle { get; private set; }
 
         public Task InitializeGame()
@@ -62,35 +71,45 @@ namespace BpArcadeRobot.Infrastructure
 
         public Task PressEnter()
         {
-            User32.PostMessage(Handle, User32.WindowMessage.WM_KEYDOWN, new IntPtr(VK_RETURN), IntPtr.Zero);
-            User32.PostMessage(Handle, User32.WindowMessage.WM_KEYUP, new IntPtr(VK_RETURN), IntPtr.Zero);
-
+            inputSimulator.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             return Task.CompletedTask;
         }
-
-        private const int VK_RETURN = 0x0D;
-        private const int VK_RIGHT = 0x27;
-        private const int VK_LEFT = 0x25;
 
         public Task StartMovingLeft()
         {
             Console.WriteLine("Press left");
-            SendKeys.SendWait("{LEFT}");
+            if (!pressingLeft)
+            {
+                inputSimulator.Keyboard.KeyDown(VirtualKeyCode.LEFT);
+                pressingLeft = true;
+            }
             return Task.CompletedTask;
         }
 
         public Task StartMovingRight()
         {
             Console.WriteLine("Press right");
-            SendKeys.SendWait("{RIGHT}");
+            if (!pressingRight)
+            {
+                inputSimulator.Keyboard.KeyDown(VirtualKeyCode.RIGHT);
+                pressingRight = true;
+            }
             return Task.CompletedTask;
         }
 
         public Task StopMoving()
         {
             Console.WriteLine("stop");
-            User32.PostMessage(Handle, User32.WindowMessage.WM_KEYUP, new IntPtr(VK_RIGHT), IntPtr.Zero);
-            User32.PostMessage(Handle, User32.WindowMessage.WM_KEYUP, new IntPtr(VK_LEFT), IntPtr.Zero);
+            if (pressingLeft)
+            {
+                inputSimulator.Keyboard.KeyUp(VirtualKeyCode.LEFT);
+                pressingLeft = false;
+            }
+            if (pressingRight)
+            {
+                inputSimulator.Keyboard.KeyUp(VirtualKeyCode.RIGHT);
+                pressingRight = false;
+            }
             return Task.CompletedTask;
         }
     }
