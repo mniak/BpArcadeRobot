@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BpArcadeRobot.Infrastructure
+namespace BpArcadeRobot
 {
     public class Brain : IBrain
     {
+        private int iteration = 0;
+
         private double currentSpeed = 0;
         private DateTime? lastMoveTime = null;
         private int lastShipPositionX = 0;
@@ -18,32 +21,71 @@ namespace BpArcadeRobot.Infrastructure
                  ? (now - this.lastMoveTime.Value).TotalMilliseconds
                  : this.cycleTimeMs;
 
-
             if (this.lastShipPositionX == 0)
                 this.lastShipPositionX = frame.Width / 2;
 
             var ship = FindShip(frame);
 
+            var currentX = ship.Midpoint().X;
             if (this.lastMove != Move.Stay)
             {
-                var currentX = ship.X + (ship.Width / 2);
-                this.currentSpeed = (currentX - this.lastShipPositionX) / milliseconds;
-                Console.WriteLine($"Current speed: {this.currentSpeed} pixels/ms");
+                var speed = Math.Abs((currentX - this.lastShipPositionX) / milliseconds);
+                if (this.currentSpeed < 1 || speed > this.currentSpeed * 0.8)
+                    this.currentSpeed = speed;
+                Console.WriteLine($"Current speed: {this.currentSpeed:0.####} px/ms. Instantaneous: {speed:0.####} px/ms");
             }
 
-            //var blocks = FindBlocks(frame);
-            var move = DateTime.Now.Second % 2 == 0
-                ? Move.Right
-                : Move.Left;
+            var blocks = FindBlocks(frame);
+            var move = MakeADecision(ship, blocks, this.currentSpeed);
+
             this.lastMove = move;
             this.lastMoveTime = DateTime.Now;
+            this.lastShipPositionX = currentX;
             return move;
         }
 
-        //private HashSet<Rectangle> FindBlocks(IFrame frame)
-        //{
-        //    throw new NotImplementedException();
-        //}
+        private Move MakeADecision(Rectangle ship, IEnumerable<Rectangle> blocks, double currentSpeed)
+        {
+            if (!blocks.Any())
+                return Move.Stay;
+
+            blocks = blocks
+                .OrderByDescending(b => b.Y)
+                .ThenBy(b => Math.Abs(ship.Midpoint().X - b.X));
+
+            var first = blocks.First();
+
+
+            return this.iteration++ % 2 == 0
+                ? Move.Right
+                : Move.Left;
+        }
+
+        private IEnumerable<Rectangle> FindBlocks(IFrame frame)
+        {
+            var points = Enumerable.Range(0, frame.Height)
+                .Zip(Enumerable.Range(0, frame.Width), (x, y) => (x, y))
+                    .Select(p => (p.x, p.y, color: frame.GetPixelColor(p.x, p.y)))
+                    .Select(p => (p.x, p.y, isblock: p.color.blue > p.color.red && p.color.blue > p.color.green))
+                    .Where(p => p.isblock)
+                    .Select(p => (p.x, p.y));
+
+            var segments = points
+                .GroupBy(p => p.y)
+                .Select(v => v.GlueSequence(p => p.x))
+                .SelectMany(g => g)
+                .Select(v => (v.Item1.x, v.Item1.y, length: v.Item2));
+
+            var blocks = segments
+                .GroupBy(p => (p.x, p.length))
+                .Select(v => v.GlueSequence(p => p.y))
+                .SelectMany(g => g)
+                .Select(v => new Rectangle(
+                    new Point(v.Item1.x, v.Item1.y),
+                    new Size(v.Item1.length, v.Item2)));
+
+            return blocks;
+        }
 
         private Rectangle FindShip(IFrame frame)
         {
@@ -95,13 +137,14 @@ namespace BpArcadeRobot.Infrastructure
             return false;
         }
 
-        private readonly int cycleTimeMs = 1000;
+        private readonly int cycleTimeMs = 100;
         private readonly DateTime? lastDelay = null;
         public Task WaitSomeTime()
         {
             var delayMs = this.lastDelay.HasValue
                 ? (int)(DateTime.Now - this.lastDelay.Value).TotalMilliseconds - this.cycleTimeMs
                 : this.cycleTimeMs;
+            Console.WriteLine($"Waiting {this.cycleTimeMs} ms");
             return Task.Delay(delayMs);
         }
     }
